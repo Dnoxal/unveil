@@ -1,5 +1,7 @@
 # Universal Reddit Consensus Search Engine
 
+This is for other contributers toward the project for the setup
+
 ## ⚙️ Requirements
 
 Make sure you have **Python 3.9+** installed, then install the required packages:
