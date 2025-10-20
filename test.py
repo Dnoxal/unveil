@@ -110,94 +110,99 @@ NUMBERED_PAT = re.compile(r"\b([A-Z][\w'&\.-]+)\s+(?:no\.?|#)\s*(\d{1,3})\b", re
 # ---------------------------------------------------
 # Subreddit mapping
 CATEGORY_MAP = {
-    "hair": "HaircareScience+curlyhair+malehairadvice+femalefashionadvice+AsianBeauty",
-    "skincare": "SkincareAddiction+AsianBeauty",
-    "makeup": "MakeupAddiction+Beauty",
-    "camera": "photography+analog+AskPhotography",
-    "laptop": "laptops+buildapc+techsupport",
-    "phone": "Android+iphone+mobile+gadgets",
-    "table tennis": "tabletennis+pingpong+sports",
-    "tennis": "tennis+sports",
-    "gaming": "gaming+pcgaming+buildapc+Games",
-    "audio": "audiophile+headphones+music",
-    "bike": "bicycling+ebikes+cycling",
-    "car": "cars+mechanicadvice+AutoDetailing",
-    "fitness": "Fitness+bodyweightfitness+supplements",
+    "hair": "HaircareScience+curlyhair+malehairadvice+femalefashionadvice+longhair+malehair",
+    "skincare": "SkincareAddiction+AsianBeauty+Beauty+30PlusSkinCare+SkincareAddictionUK",
+    "makeup": "MakeupAddiction+Beauty+femalefashionadvice+RedditLaqueristas",
+    "fragrance": "fragrance+Perfumes+IndieMakeupAndMore",
+    "nails": "RedditLaqueristas+Nailpolish",
+    "selfcare": "Beauty+MakeupAddiction+SkincareAddiction",
+    "haircare": "HaircareScience+curlyhair+femalefashionadvice+malehairadvice",
+    "default": "Beauty+SkincareAddiction+MakeupAddiction+HaircareScience"
 }
+
 
 def guess_subs(q: str) -> str:
     ql = q.lower()
-    for k,v in CATEGORY_MAP.items():
+    for k, v in CATEGORY_MAP.items():
         if k in ql:
             return v
-    return "all"
+    return CATEGORY_MAP["default"]
 
 # ---------------------------------------------------
 # Universal product phrase extractor
-# ---------------------------------------------------
-# Universal product phrase extractor (improved)
 def extract_product_phrases(text: str) -> List[str]:
     if not text:
         return []
 
     found = set()
 
-    # ---------------------------------------------------
-    # Step 1: Regex for brand + model + product
-    PRODUCT_PAT = re.compile(
-        r"\b([A-Z][\w'&\.-]+(?:\s+[A-Z0-9][\w'&\.-]+){0,3})\s+(rubber|blade|paddle|racket|bat|glue|ball|shampoo|cream|serum|gel|headphones|mouse|keyboard|laptop|lens|camera|watch|shoe|bag)\b",
+    # --- Core product nouns (beauty-focused)
+    GENERIC_NOUNS = {
+        "shampoo","conditioner","serum","cream","gel","spray","mask",
+        "cleanser","toner","moisturizer","oil","balm","exfoliant",
+        "essence","lotion","primer","foundation","concealer","lipstick",
+        "mascara","palette","eyeliner","powder","bronzer","blush",
+        "sunscreen","retinol","ampoule","peel","mist"
+    }
+
+    # --- Recognized brand hints (expand as needed)
+    BRAND_HINTS = [
+        "olaplex","loreal","redken","pureology","amika","davines",
+        "garnier","pantene","shea","moroccanoil","cerave","ouai",
+        "briogeo","matrix","function","head","dove","tresemme",
+        "ordinary","paula","neutrogena","olay","clinique","tatcha",
+        "glossier","rare","fenty","elf","maybelline","nars","estee",
+        "lancome","drunk","innisfree","cosrx","aveda","aesop","k18"
+    ]
+
+    # --- Regex for brand + product
+    BRAND_PRODUCT = re.compile(
+        r"\b([A-Z][\w'&\.-]+(?:\s+[A-Z0-9][\w'&\.-]+){0,3})\s+(?:"
+        + "|".join(GENERIC_NOUNS) + r")\b",
         re.IGNORECASE,
     )
     MODEL_PAT = re.compile(
-        r"\b([A-Z][\w'&\.-]+(?:\s+[A-Z0-9][\w'&\.-]+){0,2})\s*(?:\d{1,4}[A-Z]?)\b"
-    )
-    NUMBERED_PAT = re.compile(
-        r"\b([A-Z][\w'&\.-]+)\s+(?:no\.?|#)\s*(\d{1,3})\b", re.IGNORECASE
+        r"\b([A-Z][\w'&\.-]+(?:\s+[A-Z0-9][\w'&\.-]+){0,2})\s*(?:no\.?|#)?\s*\d{1,4}[A-Z]?\b",
+        re.IGNORECASE,
     )
 
-    for m in PRODUCT_PAT.finditer(text):
-        found.add(canon(m.group(0)))
+    # --- Extract brand+product patterns, skipping generic connectors
+    for m in BRAND_PRODUCT.finditer(text):
+        phrase = canon(m.group(0))
+        if re.search(r"\b[a-z]{3,}\b", phrase):  # must have words
+            if not re.search(r"^(and|best|your|this|that|my|a|the)\b", phrase):
+                found.add(phrase)
+
     for m in MODEL_PAT.finditer(text):
         found.add(canon(m.group(0)))
-    for m in NUMBERED_PAT.finditer(text):
-        found.add(canon(f"{m.group(1)} no.{m.group(2)}"))
 
-    # ---------------------------------------------------
-    # Step 2: spaCy entity pass
-    GENERIC_PRODUCT_NOUNS = {
-        "rubber","blade","paddle","racket","bat","glue","ball",
-        "shampoo","conditioner","serum","cream","gel","spray",
-        "headphones","mouse","keyboard","laptop","camera","lens","watch","shoe"
-    }
-
+    # --- spaCy pass for brand/product entities
     doc = NLP(text)
     for ent in doc.ents:
-        if ent.label_ == "PRODUCT":
-            found.add(canon(ent.text))
+        if ent.label_ in {"PRODUCT", "ORG"}:
+            if any(b in ent.text.lower() for b in BRAND_HINTS):
+                found.add(canon(ent.text))
 
-    # ---------------------------------------------------
-    # Step 3: brand+product combos from proper nouns
-    toks = [t for t in doc if t.pos_ in {"PROPN","NOUN"}]
+    # --- Combine nearby nouns (brand + noun)
+    toks = [t for t in doc if t.pos_ in {"PROPN", "NOUN"}]
     for i in range(len(toks) - 2):
-        trio = toks[i:i+3]
-        phrase = " ".join(t.text for t in trio)
-        if any(n.text.lower() in GENERIC_PRODUCT_NOUNS for n in trio):
-            if len(phrase.split()) <= 4:
-                found.add(canon(phrase))
+        phrase = " ".join(t.text for t in toks[i:i+3])
+        if any(n.text.lower() in GENERIC_NOUNS for n in toks[i:i+3]):
+            found.add(canon(phrase))
 
-    # ---------------------------------------------------
-    # Step 4: Clean + filter noise
+    # --- Cleanup: remove short or generic fragments
     found = {
-        f for f in found
+        f
+        for f in found
         if 3 <= len(f) <= 60
+        and len(f.split()) >= 2
         and not re.match(
-            r"^(if|thank|when|what|can|do|are|as|have|maybe|and|but|once|you|this|that|it|they|we|he|she|feel|time|spin|game|technique|practice|good|bad|strong)\b", f
+            r"^(if|thank|feel|good|bad|time|routine|skin|hair|face|help|and|best|your|this|that|my|a|the)\b",
+            f,
         )
-        and re.search(r"[a-z]{3,}\s+\d{1,4}", f) or any(b in f for b in ["rubber","blade","paddle","racket","tenergy","vega","dignics","rakza","xiom","butterfly","yasaka"])
     }
 
-    # ---------------------------------------------------
-    # Step 5: Merge near-dupes
+    # --- Merge near-dupes
     merged, used, items = [], set(), list(found)
     for i, p in enumerate(items):
         if p in used:
@@ -206,14 +211,34 @@ def extract_product_phrases(text: str) -> List[str]:
         for q in items[i + 1:]:
             if q in used:
                 continue
-            if fuzz.token_sort_ratio(p, q) >= 92:
+            if fuzz.token_sort_ratio(p, q) >= 90:
                 cluster.append(q)
                 used.add(q)
         rep = min(cluster, key=len)
         merged.append(rep)
         used.update(cluster)
 
-    return merged
+    # --- Enforce brand/model presence to drop generic "and conditioner"
+    filtered = []
+    for f in merged:
+        if any(b in f.lower() for b in BRAND_HINTS):
+            filtered.append(f)
+        elif re.search(r"\bno\.\s*\d{1,3}\b", f):  # e.g. "Olaplex No.3"
+            filtered.append(f)
+        elif re.search(r"\b\d{1,3}[A-Z]?\b", f):  # numeric models like "K18 450"
+            filtered.append(f)
+
+    # --- Final cleanup: remove emojis, verbs, duplicates
+    cleaned = []
+    for f in filtered:
+        f = re.sub(r"[\U00010000-\U0010ffff]", "", f)  # remove emojis/unicode
+        f = re.sub(r"\b(try|use|love|recommend|definitely|using|apply|avoid)\b", "", f).strip()
+        f = re.sub(r"\b(\w+)\s+\1\b", r"\1", f)  # collapse repeats like "shampoo shampoo"
+        if len(f.split()) >= 2:
+            cleaned.append(f)
+
+    return cleaned
+
 
 # ---------------------------------------------------
 # Fetch Reddit posts concurrently
@@ -258,6 +283,8 @@ def consensus_phrases(posts:List[Dict[str,Any]], top_k:int=12)->Dict[str,List[Di
     scores,examples,urls=Counter(),defaultdict(list),defaultdict(set)
     for p,phrases in zip(posts,phrases_per_doc):
         w=1.0+min(max(p.get("score",0),0),1000)/1000.0
+        beauty_bonus = 1.2 if any(s in p["subreddit"].lower() for s in ["hair","skin","makeup","beauty"]) else 1.0
+        w *= beauty_bonus
         for ph in set(phrases):
             scores[ph]+=w*idf.get(ph,1.0)
             urls[ph].add(p["url"])
