@@ -1,0 +1,168 @@
+{
+  "results": [
+    {
+      "product": "Alterna Caviar Moisture",
+      "mentions": 1,
+      "summary": "Users compare Alterna Caviar Moisture to Pureology Hydrate, noting that it feels more luxurious but is also expensive.",
+      "sentiment": "mixed",
+      "pros": [
+        "feels luxurious"
+      ],
+      "cons": [
+        "expensive"
+      ],
+      "representative_quotes": [
+        "feels even more luxurious, though expensive."
+      ],
+      "confidence": 0.8
+    },
+    {
+      "product": "Aussie Miracle Moist",
+      "mentions": 1,
+      "summary": "Users find Aussie Miracle Moist effective for treating dry ends. The product is noted for its consistent performance over time.",
+      "sentiment": "positive",
+      "pros": [
+        "effective for dry ends",
+        "consistent performance"
+      ],
+      "cons": [],
+      "representative_quotes": [
+        "tried it again and it’s still great for dry ends."
+      ],
+      "confidence": 0.85
+    },
+    {
+      "product": "Aveeno Fresh Greens Blend",
+      "mentions": 1,
+      "summary": "Users appreciate the smell of Aveeno Fresh Greens Blend, finding it refreshing and gentle. It is particularly noted for its effectiveness on oily roots.",
+      "sentiment": "positive",
+      "pros": [
+        "smells great",
+        "refreshing",
+        "gentle",
+        "great for oily roots"
+      ],
+      "cons": [],
+      "representative_quotes": [
+        "smells great - Refreshing and gentle, great for oily roots."
+      ],
+      "confidence": 0.95
+    },
+    {
+      "product": "Aveeno Oat Milk Blend",
+      "mentions": 1,
+      "summary": "Users find Aveeno Oat Milk Blend to have a pleasant smell and gentle feel. However, there are concerns about its effectiveness in cleaning product buildup.",
+      "sentiment": "mixed",
+      "pros": [
+        "pleasant smell",
+        "gentle feel"
+      ],
+      "cons": [
+        "ineffective at cleaning product buildup"
+      ],
+      "representative_quotes": [
+        "Smells good and feels gentle",
+        "not sure it actually cleans product buildup well"
+      ],
+      "confidence": 0.85
+    },
+    {
+      "product": "Biolage Colorlast",
+      "mentions": 1,
+      "summary": "Biolage Colorlast is appreciated for maintaining vibrant hair color and being gentle enough for frequent use. There are no negative aspects mentioned in the provided posts.",
+      "sentiment": "positive",
+      "pros": [
+        "keeps color vibrant",
+        "gentle for frequent washes"
+      ],
+      "cons": [],
+      "representative_quotes": [
+        "Keeps color vibrant, gentle enough for frequent washes."
+      ],
+      "confidence": 0.95
+    },
+    {
+      "product": "Biolage Volume Bloom",
+      "mentions": 1,
+      "summary": "Users with thin hair find that Biolage Volume Bloom adds volume without leaving residue. The single review is highly positive.",
+      "sentiment": "positive",
+      "pros": [
+        "adds volume to thin hair",
+        "non-sticky"
+      ],
+      "cons": [],
+      "representative_quotes": [
+        "Makes my fine hair look fuller without feeling sticky."
+      ],
+      "confidence": 0.95
+    },
+    {
+      "product": "Briogeo Scalp Revival",
+      "mentions": 1,
+      "summary": "Users appreciate the minty smell and cooling, tingling effect of Briogeo Scalp Revival. However, there are concerns about the price.",
+      "sentiment": "mixed",
+      "pros": [
+        "minty smell",
+        "cooling and tingling effect"
+      ],
+      "cons": [
+        "pricey"
+      ],
+      "representative_quotes": [
+        "Smells minty and cooling — love the tingling effect.",
+        "A bit pricey though."
+      ],
+      "confidence": 0.8
+    },
+    {
+      "product": "Cantu Sulfate-Free Cleansing Cream",
+      "mentions": 1,
+      "summary": "Users find the Cantu Sulfate-Free Cleansing Cream creamy and moisturizing. However, it can leave buildup if not rinsed thoroughly.",
+      "sentiment": "mixed",
+      "pros": [
+        "creamy texture",
+        "moisturizing"
+      ],
+      "cons": [
+        "can leave buildup"
+      ],
+      "representative_quotes": [
+        "Feels creamy and moisturizing",
+        "buildup happens if I don’t rinse really well"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "product": "Dove Daily Moisture",
+      "mentions": 1,
+      "summary": "Users with fine hair find Dove Daily Moisture too heavy, leaving hair feeling oily and flat. It may be more suitable for those with thicker or drier hair types.",
+      "sentiment": "negative",
+      "pros": [],
+      "cons": [
+        "too heavy for fine hair",
+        "leaves hair feeling oily"
+      ],
+      "representative_quotes": [
+        "Made my hair flat",
+        "Might be too rich for fine hair"
+      ],
+      "confidence": 0.85
+    },
+    {
+      "product": "Dove Men+Care Thickening Shampoo",
+      "mentions": 1,
+      "summary": "Users find that Dove Men+Care Thickening Shampoo makes hair look fuller and has a clean, subtle smell.",
+      "sentiment": "positive",
+      "pros": [
+        "makes hair look fuller",
+        "clean and subtle smell"
+      ],
+      "cons": [],
+      "representative_quotes": [
+        "Actually makes hair look fuller.",
+        "Smell is clean and not overpowering."
+      ],
+      "confidence": 0.95
+    }
+  ]
+}
