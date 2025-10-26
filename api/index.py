@@ -950,5 +950,5 @@ def download_csv(
 
 # ---------------------------------------------------
 if __name__ == "__main__":
-    import uvicorn, re
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    import uvicorn, os
+    uvicorn.run("api.index:app", host="0.0.0.0", port=int(os.getenv("PORT", "8080")), reload=True)
