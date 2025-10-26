@@ -1247,9 +1247,7 @@ def download_csv(
     headers = {"Content-Disposition": f"attachment; filename=validated_{safe}.csv"}
     return StreamingResponse(iter([df.to_csv(index=False)]), media_type="text/csv", headers=headers)
 
-# Vercel handler - wrap FastAPI with Mangum for AWS Lambda/Vercel compatibility
-from mangum import Mangum
-handler = Mangum(app, lifespan="off")
+# FastAPI app is exported directly
 
 # ---------------------------------------------------
 if __name__ == "__main__":
