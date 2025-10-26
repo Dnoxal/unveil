@@ -1,18 +1,13 @@
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse
 from datetime import datetime
-
-# Print on import so you can see in Vercel logs that the module loaded
-print(">>> Importing app at", datetime.utcnow().isoformat(), "UTC")
 
 app = FastAPI(title="Unveil", version="HACKOH/IO")
 
-# super-safe minimal home: proves routing works
 @app.get("/api/health")
 def health():
     return {"ok": True, "ts": datetime.utcnow().isoformat()}
 
-# If your PAGE_INDEX template isn't available yet, this still works
 @app.get("/", response_class=HTMLResponse)
 def home():
     return HTMLResponse(
@@ -26,10 +21,5 @@ def home():
         </body>"""
     )
 
-# Vercel handler - FastAPI is already ASGI compatible
+# Vercel handler
 handler = app
-
-# Local dev runner only (Vercel ignores this block)
-if __name__ == "__main__":
-    import uvicorn, os
-    uvicorn.run("app:app", host="0.0.0.0", port=int(os.getenv("PORT","8080")), reload=True)
