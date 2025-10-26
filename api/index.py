@@ -26,6 +26,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from jinja2 import Template
 
+
 # ---------------------------------------------------
 # Logging
 logging.basicConfig(
@@ -881,6 +882,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/", response_class=HTMLResponse)
+def home():
+    return HTMLResponse(PAGE_INDEX.render(year=datetime.now().year))
 
 @app.get("/", response_class=HTMLResponse)
 def index():
