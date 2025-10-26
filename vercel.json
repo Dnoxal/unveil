@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/app.py": { "runtime": "python3.9" }
+    "api/app.py": { "runtime": "now-python@3.9" }
   },
   "routes": [
     { "src": "/(.*)", "dest": "api/app.py" }
