@@ -54,21 +54,43 @@ except Exception as _e:
 # ---------------------------------------------------
 # spaCy (for NER + POS)
 def load_spacy():
+    import logging
     try:
         import spacy
+    except Exception as e:
+        logging.error("spaCy is not installed: %s", e)
+        # Return a tiny no-op pipeline so the app can still run
+        return None
+
+    nlp = None
+
+    # 1) Try the packaged small model (install via wheel URL in requirements.txt)
+    try:
+        nlp = spacy.load("en_core_web_sm")
+    except Exception:
+        # 2) Some environments prefer direct import of the package
         try:
-            nlp = spacy.load("en_core_web_sm")
+            import en_core_web_sm  # type: ignore
+            nlp = en_core_web_sm.load()
         except Exception:
-            from spacy.cli import download
-            logging.info("Downloading spaCy model en_core_web_sm ...")
-            download("en_core_web_sm")
-            nlp = spacy.load("en_core_web_sm")
+            # 3) Final fallback: blank English (no pretrained components)
+            logging.warning(
+                "en_core_web_sm not available. Falling back to spacy.blank('en')."
+            )
+            try:
+                nlp = spacy.blank("en")
+            except Exception as e:
+                logging.error("Failed to create blank English pipeline: %s", e)
+                return None
+
+    # Ensure we have sentence boundaries
+    try:
         if "sentencizer" not in nlp.pipe_names:
             nlp.add_pipe("sentencizer")
-        return nlp
-    except ImportError:
-        logging.error("spaCy not installed. Run: pip install spacy && python -m spacy download en_core_web_sm")
-        sys.exit(1)
+    except Exception as e:
+        logging.warning("Could not add sentencizer: %s", e)
+
+    return nlp
 
 NLP = load_spacy()
 
