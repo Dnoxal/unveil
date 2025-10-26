@@ -1,7 +1,5 @@
 {
-  "functions": {
-    "api/index.py": {
-      "includeFiles": "**"
-    }
-  }
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/app.py" }
+  ]
 }
