@@ -1247,10 +1247,11 @@ def download_csv(
     headers = {"Content-Disposition": f"attachment; filename=validated_{safe}.csv"}
     return StreamingResponse(iter([df.to_csv(index=False)]), media_type="text/csv", headers=headers)
 
-# Vercel handler - FastAPI is ASGI compatible
-handler = app
+# Vercel handler - wrap FastAPI with Mangum for AWS Lambda/Vercel compatibility
+from mangum import Mangum
+handler = Mangum(app, lifespan="off")
 
 # ---------------------------------------------------
 if __name__ == "__main__":
     import uvicorn, os
-    uvicorn.run("api.index:app", host="0.0.0.0", port=int(os.getenv("PORT", "8080")), reload=True)
+    uvicorn.run("app:app", host="0.0.0.0", port=int(os.getenv("PORT", "8080")), reload=True)
