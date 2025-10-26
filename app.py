@@ -96,23 +96,41 @@ NLP = load_spacy()
 
 
 REDDIT = None
+from fastapi import HTTPException
+
+REDDIT = None
 def get_reddit():
     global REDDIT
-    if REDDIT: return REDDIT
+    if REDDIT:
+        return REDDIT
     try:
         import praw
-    except ImportError:
-        logging.error("praw not installed. Run: pip install praw")
-        sys.exit(1)
+    except ImportError as e:
+        logging.error("praw not installed: %s", e)
+        # Do not sys.exit in serverless. Surface a controlled 500.
+        raise HTTPException(status_code=500, detail="Backend missing dependency: praw")
 
     cid  = os.getenv("REDDIT_CLIENT_ID", "").strip()
     csec = os.getenv("REDDIT_CLIENT_SECRET", "").strip()
     ua   = os.getenv("REDDIT_USER_AGENT", "universal-consensus/1.0 (by u/yourusername)").strip()
+
     if not cid or not csec:
-        raise RuntimeError("Missing credentials. Set REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET.")
-    REDDIT = praw.Reddit(client_id=cid, client_secret=csec, user_agent=ua, check_for_async=False)
-    _ = REDDIT.read_only
-    return REDDIT
+        logging.error("Missing REDDIT_CLIENT_ID or REDDIT_CLIENT_SECRET")
+        raise HTTPException(status_code=500, detail="Missing Reddit credentials")
+
+    try:
+        REDDIT = praw.Reddit(
+            client_id=cid,
+            client_secret=csec,
+            user_agent=ua,
+            check_for_async=False,
+        )
+        _ = REDDIT.read_only  # force init
+        return REDDIT
+    except Exception as e:
+        logging.error("Failed to initialize PRAW: %s", e)
+        raise HTTPException(status_code=500, detail="Could not initialize Reddit client")
+
 
 # ---------------------------------------------------
 # Helpers
@@ -263,42 +281,39 @@ def dedupe_phrases(phrases: List[str]) -> List[str]:
     return out
 
 def extract_product_phrases(text: str) -> List[str]:
-    if not text: return []
+    if not text:
+        return []
     found = set()
 
-    # 1) Direct brand + generic noun (robust to casing)
+    # 1) Regex-only passes that do not require spaCy
     for m in BRAND_PRODUCT_RE.finditer(text):
         phrase = normalize_phrase(m.group(0))
         if is_valid_phrase(phrase): found.add(phrase)
-
-    # 2) Model-like
     for m in MODEL_RE.finditer(text):
         phrase = normalize_phrase(m.group(0))
         if is_valid_phrase(phrase): found.add(phrase)
 
-    # 3) Token-window rule: brand token within ±4 tokens of a generic noun.
+    # If spaCy is missing, return the regex-based results
+    if NLP is None:
+        return [p for p in dedupe_phrases(list(found)) if is_valid_phrase(p)]
+
+    # 2) Token-window and noun-chunk passes that use spaCy
     doc = NLP(text)
     toks = [t.text for t in doc]
-    low  = [t.text.lower() for t in doc]   # <- fix
+    low  = [t.text.lower() for t in doc]
+
     for i, tok in enumerate(low):
         if tok in GENERIC_NOUNS:
             left = max(0, i-4); right = min(len(low), i+5)
             window = " ".join(toks[left:right])
-            # if any brand-ish token in window (supports multiword brands)
             if any(b in window.lower() for b in BRAND_TOKENS):
-                # minimal span from nearest brand token start to noun end
-                span = window
-                # strip lead-ins like "this/that/my/the"
-                span = normalize_phrase(span)
-                # ensure it ends with the noun (common case like "... shampoo")
-                # keep shortest phrase ending at noun
-                m = re.search(r"((?:[\w'&\.-]+\s+){0,4}" + tok + r")\b", span, re.IGNORECASE)
+                span = normalize_phrase(window)
+                m = re.search(r"((?:[\w'&\.-]+\s+){0,4}" + re.escape(tok) + r")\b", span, re.IGNORECASE)
                 if m:
                     phrase = normalize_phrase(m.group(1))
                     if is_valid_phrase(phrase):
                         found.add(phrase)
 
-    # 4) Noun chunks with generic noun; allow mentions like "this X shampoo"
     for chunk in doc.noun_chunks:
         phrase = normalize_phrase(chunk.text)
         if has_generic_noun(phrase) and is_valid_phrase(phrase):
@@ -306,6 +321,7 @@ def extract_product_phrases(text: str) -> List[str]:
 
     clean = [p for p in dedupe_phrases(list(found)) if is_valid_phrase(p)]
     return clean
+
 
 def fetch_posts(reddit, query:str, subs:str, limit_posts:int, comments_per_post:int) -> List[Dict[str,Any]]:
     space = reddit.subreddit(subs if subs.lower()!="all" else "all")
