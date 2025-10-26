@@ -596,7 +596,7 @@ PAGE_INDEX = Template(r"""
   <header class="sticky top-0 z-30 backdrop-blur-xl bg-white/65 dark:bg-slate-900/65 border-b border-white/20 dark:border-white/10">
     <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-brand-500 to-fuchsia-500 shadow-md animate-floaty"></div>
+        <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-brand-500 to-fuchsia-500 shadow-md"></div>
         <span class="text-lg font-semibold tracking-tight">Unveil</span>
         <span class="ml-2 inline-flex items-center rounded-full bg-white/50 dark:bg-white/10 px-2 py-0.5 text-xs border border-black/5 dark:border-white/10">HACKOH/IO 2025</span>
       </div>
@@ -653,7 +653,7 @@ PAGE_INDEX = Template(r"""
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label class="block text-sm font-medium mb-1">Subreddits (optional)</label>
+              <label class="block text-sm font-medium mb-1">Communities (optional)</label>
               <input name="subreddits" placeholder="auto"
                 class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-950 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500/50" />
             </div>
@@ -778,7 +778,7 @@ PAGE_RESULTS = Template(r"""
       <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
           <h1 class="text-3xl font-bold tracking-tight">Validated products for “{{ q }}”</h1>
-          <p class="mt-1 text-slate-600 dark:text-slate-400">Curated from Reddit mentions, refined by AI. Real brands, clear trade-offs, linked sources.</p>
+          <p class="mt-1 text-slate-600 dark:text-slate-400">Curated from community mentions, refined by AI. Real brands, clear trade-offs, linked sources.</p>
         </div>
         {% if not ai_used %}
         <div class="rounded-xl border border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-600 dark:bg-amber-950/50 dark:text-amber-200 px-3 py-2 text-sm">
@@ -894,12 +894,6 @@ PAGE_RESULTS = Template(r"""
       <div>
         <div class="font-semibold">Unveil</div>
         <p class="mt-2">The fastest way to turn signals into product choices your team can trust.</p>
-      </div>
-      <div>
-        <div class="font-semibold">Resources</div>
-        <ul class="mt-2 space-y-1">
-          <li><a href="#" class="hover:underline">Changelog</a></li>
-        </ul>
       </div>
     </div>
   </footer>
